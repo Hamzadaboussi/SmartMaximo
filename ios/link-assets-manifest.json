@@ -1,0 +1,77 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "lib/assets/fonts/DMSans-Bold.ttf",
+      "sha1": "ef47944cd61dfd6889e7f0bb7596d87849d0e6cb"
+    },
+    {
+      "path": "lib/assets/fonts/DMSans-BoldItalic.ttf",
+      "sha1": "2cda7fbf23c06dbac3313d545ee3d731337d0806"
+    },
+    {
+      "path": "lib/assets/fonts/DMSans-Italic.ttf",
+      "sha1": "d25f274ef2cedcf71d66a4297d7337b6ae89a4ae"
+    },
+    {
+      "path": "lib/assets/fonts/DMSans-Medium.ttf",
+      "sha1": "afe77e497ca69c2e83ade71a6acb5036393db1f1"
+    },
+    {
+      "path": "lib/assets/fonts/DMSans-MediumItalic.ttf",
+      "sha1": "8ee39617a14a355fb07fd4b6e71a8b5ab48bea92"
+    },
+    {
+      "path": "lib/assets/fonts/DMSans-Regular.ttf",
+      "sha1": "f1cf9ed15e1ec1db951c401233655dbbd304c732"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-Black.ttf",
+      "sha1": "3f8e401d808f6ce84b542266726514ac8be73171"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-BlackItalic.ttf",
+      "sha1": "03d6e3747d862385dbe48e8296385b9236101a62"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-Bold.ttf",
+      "sha1": "62442a18a9fe9457c1afeabf683d263a691b7798"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-BoldItalic.ttf",
+      "sha1": "2f10ad9e8cab0880182705c4e0fbaeabae706e64"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-Italic.ttf",
+      "sha1": "65f3f6a7e1bd2fa6f2df35e4b07775d7f1dde4f0"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-Light.ttf",
+      "sha1": "18788c5d630fa695f9283f6393bfa541b2031508"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-LightItalic.ttf",
+      "sha1": "6e01f9df9449565697032b002706a94b51862bbe"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-Medium.ttf",
+      "sha1": "3c6a09fcc6a454924c81af7dff94fc6d399ed79b"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-MediumItalic.ttf",
+      "sha1": "b3aa2d8f16d5a331fdced82f213a052b204eaca0"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-Regular.ttf",
+      "sha1": "56c5c0d38bde4c1f1549dda43db37b09c608aad3"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-Thin.ttf",
+      "sha1": "58c733e22bceeaf9609ce578eca92ac303c6d92f"
+    },
+    {
+      "path": "lib/assets/fonts/Roboto-ThinItalic.ttf",
+      "sha1": "cc79d5a23bd0ec08b1d99f5390bf33cacc3082f4"
+    }
+  ]
+}

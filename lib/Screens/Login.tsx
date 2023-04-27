@@ -3,6 +3,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React, { useState } from 'react';
 import { View, ImageBackground, StyleSheet, Image, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import FastImage from 'react-native-fast-image';
+import getAllWorkOrders from '../controllers/workOrderController' ;
+import SQLite, { enablePromise } from 'react-native-sqlite-storage';
+import RNFS from 'react-native-fs';
+
+
+
+async function fetchWorkOrders() {
+  const workOrders = await getAllWorkOrders();
+  //console.log(workOrders);
+}
 
 function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -11,6 +21,12 @@ function LoginScreen() {
   const handleLogin = () => {
     // Here, you can add your login logic
     console.log(`Email: ${email}, Password: ${password}`);
+    
+
+    
+    
+    
+    fetchWorkOrders()
   };
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>

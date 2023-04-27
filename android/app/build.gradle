@@ -1,5 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
+apply plugin:  "com.google.gms.google-services"
 
 import com.android.build.OutputFile
 
@@ -94,6 +95,10 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     namespace "com.stage"
+    compileOptions {
+	    sourceCompatibility JavaVersion.VERSION_1_8
+	    targetCompatibility JavaVersion.VERSION_1_8
+    }
     defaultConfig {
         applicationId "com.stage"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -151,8 +156,10 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation platform('com.google.firebase:firebase-bom:31.5.0')
     
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.0.0")
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {

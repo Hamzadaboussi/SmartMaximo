@@ -1,10 +1,18 @@
-import { faArrowLeft, faScrewdriverWrench } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft,faCheck, faScrewdriverWrench,faArrowUp,faArrowTrendUp  } from '@fortawesome/free-solid-svg-icons';
 import { faClock } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React, { useEffect, useState } from 'react';
 import { View, ImageBackground, StyleSheet, Image, Text, TextInput, TouchableOpacity, ScrollView, FlatList } from 'react-native';
 import FastImage from 'react-native-fast-image';
-
+import CircularProgress from 'react-native-circular-progress';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { Easing } from 'react-native';
+import { Animated } from 'react-native';
+import renderWorkOrder from '../componant/Workordercard';
+import getAllWorkOrders from '../controllers/workOrderController' ;
+import WorkOrderDao from '../models/WorkOrderDao';
+import { WorkOrder } from '../componant/WorkOrder';
+/*
 const data = [
     { id: "SER1", status: 'On Progress', description: 'Fix the broken door', deadline: '2022-05-01' },
     { id: "SER2", status: 'Completed', description: 'Paint the wall', deadline: '2022-06-15' },
@@ -15,64 +23,69 @@ const data = [
     { id: "SER7", status: 'New', description: 'Install new lights', deadline: '2022-07-23' },
     { id: "SER8", status: 'On Progress', description: 'Repair the roof', deadline: '2022-08-09' },
     { id: "SER9", status: 'On Progress', description: 'Repair the roof', deadline: '2022-08-09' },
-    
-]
+    { id: "SER10", status: 'Completed', description: 'Paint the wall', deadline: '2022-06-15' },
+    { id: "SER21", status: 'Completed', description: 'Paint the wall', deadline: '2022-06-15' },
+    { id: "SER22", status: 'Completed', description: 'Paint the wall', deadline: '2022-06-15' },
+    { id: "SER23", status: 'Completed', description: 'Paint the wall', deadline: '2022-06-15' },
+    { id: "SER24", status: 'Completed', description: 'Paint the wall', deadline: '2022-06-15' },
+    { id: "SER25", status: 'Completed', description: 'Paint the wall', deadline: '2022-06-15' },
+    { id: "SER26", status: 'Completed', description: 'Paint the wall', deadline: '2022-06-15' },
+    { id: "SER27", status: 'Completed', description: 'Paint the wall', deadline: '2022-06-15' },
 
-function LoginScreen() {
+    
+]*/
+
+
+
+function WorkOrderList() {
     const [filter, setFilter] = useState('All');
-    const [allWorkOrders, setAllWorkOrders] = useState(data);
-    const [workOrders, setWorkOrders] = useState(data);
+    const [totalPages, settotalPages] = useState();
+    const [allWorkOrders, setAllWorkOrders] = useState<WorkOrder[]>([]);
+    const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(6);
-
+    const [orders, setOrders] = useState<WorkOrder[]>([]);
+    
+    async function fetchWorkOrders() {
+        const orders = await getAllWorkOrders();
+        const workOrderDao = new WorkOrderDao();
+        const yo = await workOrderDao.getwo();
+        console.log("heeey");
+        console.log(yo);
+        setOrders(orders);
+        setAllWorkOrders(orders);
+        setWorkOrders(orders);
+        settotalPages(Math.ceil(orders.length / itemsPerPage));
+      }
+    
     useEffect(() => {
+        
+        fetchWorkOrders();
+      }, [itemsPerPage]);
+    
+      useEffect(() => {
         const start = (currentPage - 1) * itemsPerPage;
         const end = start + itemsPerPage;
-        
         setWorkOrders(allWorkOrders.slice(start, end));
-    }, [allWorkOrders, currentPage, itemsPerPage]);
-
-    const totalPages = Math.ceil(allWorkOrders.length / itemsPerPage);
-    const filterWorkOrders = (status: string) => {
-        
+      }, [allWorkOrders, currentPage, itemsPerPage]);
+    
+      const filterWorkOrders = (status: string) => {
         setFilter(status);
         if (status === 'All') {
-            
-            setAllWorkOrders(data);
-            setCurrentPage(1);
-            return;
+          setAllWorkOrders(orders);
+          settotalPages(Math.ceil(orders.length / itemsPerPage));
+          setCurrentPage(1);
+        } else {
+          // filter work orders by status
+          const filteredWorkOrders = orders.filter((wo) => wo.status === status);
+          setAllWorkOrders(filteredWorkOrders);
+          settotalPages(Math.ceil(filteredWorkOrders.length / itemsPerPage));
+          setCurrentPage(1);
         }
-        // filter work orders by status
-        const filteredWorkOrders = data.filter((wo) => wo.status === status);
-        setWorkOrders(filteredWorkOrders);
-        setAllWorkOrders(data);
-        setCurrentPage(1);
-    }; 
-    interface WorkOrder {
-        id: string;
-        status: string;
-        description: string;
-        deadline: string;
-    }
-    const renderWorkOrder = ({ item }: { item: WorkOrder }) => (
-        <View style={[styles.workOrderContainer, 
-            item.status === 'On Progress' ? { borderStartColor : '#ffffff00' } : 
-            item.status === 'Completed' ? { borderStartColor : 'green' } : 
-            item.status === 'New' ? { borderStartColor : '#ffffff00' } : null
-        ]}>
-            <View style={styles.id}>
-                <FontAwesomeIcon icon={faScrewdriverWrench} style={styles.icon2} />
-                <Text style={styles.workOrderTitle}>{` ${item.id}`}</Text>
-            </View>
-            <View style={styles.id}>
-                <FontAwesomeIcon icon={faClock} style={styles.icon2} />
-                <Text style={styles.workOrderDeadline}>{` ${item.deadline}`}</Text>
-            </View>
-            <Text style={styles.workOrderDescription}>{item.description}</Text>
-            
-            <Text style={styles.workOrderStatus}>{item.status}</Text>
-        </View>
-    );
+      };
+    
+
+      
     return (
 
         <View style={styles.container}>
@@ -89,7 +102,9 @@ function LoginScreen() {
                 <Text style={styles.TopContainer} >My Work Orders </Text>
 
             </View>
+            
             <View style={styles.filterBar}>
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
                 <TouchableOpacity
                     style={[styles.filterButton, filter === 'All' && styles.activeFilterButton]}
                     onPress={() => filterWorkOrders('All')}>
@@ -106,10 +121,26 @@ function LoginScreen() {
                     <Text style={styles.filterButtonText}>Completed</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={[styles.filterButton, filter === 'New' && styles.activeFilterButton]}
-                    onPress={() => filterWorkOrders('New')}>
-                    <Text style={styles.filterButtonText}>New</Text>
+                    style={[styles.filterButton, filter === 'Scheduled' && styles.activeFilterButton]}
+                    onPress={() => filterWorkOrders('Scheduled')}>
+                    <Text style={styles.filterButtonText}>Scheduled</Text>
                 </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.filterButton, filter === 'In Planning' && styles.activeFilterButton]}
+                    onPress={() => filterWorkOrders('In Planning')}>
+                    <Text style={styles.filterButtonText}>In Planning</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.filterButton, filter === 'Cancelled' && styles.activeFilterButton]}
+                    onPress={() => filterWorkOrders('Cancelled')}>
+                    <Text style={styles.filterButtonText}>Cancelled</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.filterButton, filter === 'Closed' && styles.activeFilterButton]}
+                    onPress={() => filterWorkOrders('Closed')}>
+                    <Text style={styles.filterButtonText}>Closed</Text>
+                </TouchableOpacity>
+            </ScrollView>
             </View>
 
             <View style={styles.whiteContainer} >
@@ -121,8 +152,8 @@ function LoginScreen() {
                 <FlatList
                     data={workOrders}
                     renderItem={renderWorkOrder}
-                    keyExtractor={(item) => item.id.toString()}
-                    style={{ flexGrow: 1 ,height: 400 }}
+                    keyExtractor={(item) => item?.workorderid?.toString()}
+                    style={{ flexGrow: 1 ,height: 430 }}
                 />
                 {totalPages > 1 && (
                     <ScrollView
@@ -174,9 +205,9 @@ const styles = StyleSheet.create({
     },
     whiteContainer: {
         position: "relative",
-        top: - 140, // 10 pixels overlapping
+        top: - 150, // 10 pixels overlapping
         left: 0,
-        height: '75%',
+        height: '77%',
         width: '100%',
         borderTopLeftRadius: 40, // Set the top-left border radius
         borderTopRightRadius: 40,
@@ -233,6 +264,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: "flex-start",
         height: 40,
+        width :"90%",
         borderRadius: 5,
         borderColor: "#FFFFFF40",
         borderWidth: 0.5,
@@ -275,45 +307,7 @@ const styles = StyleSheet.create({
         paddingBottom: 12,
         paddingTop: 12
     },
-    workOrderContainer: {
-        backgroundColor: '#FFF',
-        borderRadius: 20,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        marginBottom: 10,
-        width: 320,
-        
-        borderStartWidth : 3,
-      
-
-
-    },
-    workOrderTitle: {
-        fontFamily: 'DMSans-Regular',
-        fontSize: 12,
-        paddingLeft :10 ,
-        color: '#2D5151',
-    },
-    workOrderDescription: {
-        fontFamily: 'DMSans-Bold',
-        color: '#2D5151',
-        marginBottom: 5,
-        fontSize: 15,
-        paddingHorizontal: 5,
-    },
-    workOrderDeadline: {
-        fontFamily: 'DMSans-Regular',
-        color: '#2D5151',
-        marginBottom: 5,
-        fontSize: 13,
-        paddingLeft :10 ,
-    },
-    workOrderStatus: {
-        fontFamily: 'DMSans-Regular',
-        
-        textAlign: 'right',
-        color: '#2D5151',
-    },
+   
     activeFilterButton: {
         backgroundColor: '#FFFFFF33',
 
@@ -347,14 +341,7 @@ const styles = StyleSheet.create({
         color: "#212427",
         fontFamily: 'DMSans-Medium',
     },
-    id: {
-        flexDirection: 'row',
-        alignItems: 'center',
-
-        
-        paddingHorizontal: 5,
-
-    },
+    
 });
 
-export default LoginScreen;
+export default WorkOrderList;

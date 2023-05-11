@@ -1,38 +1,23 @@
 import React from 'react';
 import SQLite, { enablePromise } from 'react-native-sqlite-storage';
+import { Alert, PermissionsAndroid } from 'react-native';
+import { WoLog } from './WoLogModel';
+import { WorkOrder } from './WorkOrderModel';
+import { WoActivity } from './WoActivity';
 
 
-interface WorkOrder {
-  workorderid: number;
-  description: string;
-  status: string;
-  assetnum: string;
-  wopriority: string;
-  location: string;
-  schedstart: string;
-  woActivities?: WoActivity[];
-  wologs?: WoLog[];
-}
 
-interface WoActivity {
-  taskid: number;
-  description: string;
-  status: string;
-}
 
-interface WoLog {
-  worklogid: number;
-  description: string;
-  logtype: string;
-  createdate: string;
-  createby: string;
-}
+
+
+
 
 export default class WorkOrderDao {
   private db?: SQLite.SQLiteDatabase ;
   private tableNameW = 'workorders';
   private tableNameT = 'Taches';
   private tableNameL = 'Logs';
+  private tableNameU = 'Users';
 
   
   
@@ -42,7 +27,7 @@ export default class WorkOrderDao {
     
     try {
       this.db = await SQLite.openDatabase({
-        name: 'workorderrrs.sqlite',
+        name: 'workorders.sqlite',
         location: 'default',
        
       });
@@ -83,28 +68,19 @@ export default class WorkOrderDao {
         )`
       );
       await this.db?.executeSql('COMMIT');
+
+      await this.db.executeSql(
+        `CREATE TABLE IF NOT EXISTS ${this.tableNameU} (
+          USERID INTEGER PRIMARY KEY,
+          _lid TEXT,
+          _lpwd TEXT,
+          _islogged TEXT
+
+        )`
+    );
+    await this.db?.executeSql('COMMIT');
       
-        
-      this.db.transaction((tx) => {
-        tx.executeSql(
-          'SELECT name FROM sqlite_temp_master WHERE type="table"',
-          [],
-          (tx, results) => {
-            console.log("Query completed");
-      
-            
-      
-            for (let i = 0; i < results.rows.length; i++) {
-              const tableName = results.rows.item(i).name;
-      
-              console.log(`Table name: ${tableName}`);
-            }
-          },
-          (error) => {
-            console.error(error);
-          }
-        );
-      });
+
         
           
         
@@ -116,7 +92,28 @@ export default class WorkOrderDao {
     }
   }
 
-  
+  async loginDBlocal(username: string, password: string): Promise<void> {
+    try {
+      const count = await this.count(this.tableNameU)
+
+      if ( count === 0) {
+        const loginPromises = await this.db?.executeSql(
+          `INSERT OR REPLACE INTO ${this.tableNameU} (USERID, _lid, _lpwd, _islogged) VALUES (?, ?, ?, ?)`,
+          [null, username, password , "true"]
+        );
+        await this.db?.executeSql('COMMIT');
+        console.log("user ajouter");
+        await Promise.all([loginPromises]);
+      }
+      else {
+        console.log(count)
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+}
+
 
   async saveAllWorkOrders(workOrders: WorkOrder[]): Promise<void> {
     try {
@@ -171,15 +168,7 @@ export default class WorkOrderDao {
       } else {
         console.log('Database is not opened!');
       }
-      try {
-        const countResult = await this.db?.executeSql(`SELECT COUNT(*) FROM ${this.tableNameW}`);
-        
-        const count = countResult && countResult[0].rows.item(0)['COUNT(*)'];
-        console.log('this is count');
-        console.log(count); 
-      } catch (error) {
-        console.error(error);
-      }
+      
 
 
     } catch (error) {
@@ -188,37 +177,172 @@ export default class WorkOrderDao {
       throw error;
     }
   }
+
+  async requestExternalStoragePermission() {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        {
+          title: 'External Storage Permission',
+          message: 'This app needs access to your external storage to be able to read data from your device.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        throw new Error('Storage permission not granted');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  }
+
   async getwo(): Promise<WorkOrder[]> {
     try {
-      
-      const result = await this.db?.executeSql(`SELECT * FROM ${this.tableNameW}`);
-      
-      if (!result || result[0].rows.length === 0) {
-        
-        return [];
-      }
-      const rows = result[0].rows;
       const workOrders: WorkOrder[] = [];
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows.item(i);
-        const wo: WorkOrder = {
-          workorderid: row.workorderid,
-          description: row.description,
-          status: row.status,
-          assetnum: row.assetnum,
-          wopriority: row.wopriority,
-          location: row.location,
-          schedstart: row.schedstart,
-        };
-        workOrders.push(wo);
-      }
-      console.log("wsselt xD");
+      console.log("dkhalt");
+      await new Promise<void>((resolve, reject) => {
+        this.db?.transaction((tx) => {
+          tx.executeSql(`SELECT * FROM ${this.tableNameW}`, [], (tx, results) => {
+            console.log("Queery completed");
+  
+            // Get rows with Web SQL Database spec compliance.
+  
+            const len = results.rows.length;
+            for (let i = 0; i < len; i++) {
+              const row = results.rows.item(i);
+              const wo: WorkOrder = {
+                workorderid: row.WORKORDERID,
+                description: row.DESCRIPTION,
+                status: row.STATUS,
+                assetnum: row.ASSETNUM,
+                wopriority: row.WOPRIORITY,
+                location: row.LOCATION,
+                schedstart: row.SCHEDSTART,
+              };
+              workOrders.push(wo);
+            }
+            console.log("wsselt xD");
+            
+            resolve();
+          }, (tx, error) => {
+            console.error(error);
+            reject(error);
+          });
+        });
+      });
       return workOrders;
     } catch (error) {
       console.error(error);
       throw error;
     }
   }
+
+  async getwlogs(id : number): Promise<WoLog[]> {
+    try {
+      const worklogs: WoLog[] = [];
+      console.log("dkhalt");
+      await new Promise<void>((resolve, reject) => {
+        this.db?.transaction((tx) => {
+          tx.executeSql(`SELECT * FROM ${this.tableNameL} WHERE WORKORDERID = ${id} `, [], (tx, results) => {
+            console.log("Queery completed");
+  
+            // Get rows with Web SQL Database spec compliance.
+  
+            const len = results.rows.length;
+            for (let i = 0; i < len; i++) {
+              const row = results.rows.item(i);
+              const wo: WoLog = {
+                worklogid: row.WORKLOGID,
+                description: row.DESCRIPTION,
+                logtype : row.LOGTYPE,
+                createdate: row.CREATEDATE,
+                createby: row.CREATEBY,
+              };
+              worklogs.push(wo);
+            }
+            console.log("wsselt xD");
+            
+            resolve();
+          }, (tx, error) => {
+            console.error(error);
+            reject(error);
+          });
+        });
+      });
+      return worklogs;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async getwActivities(id : number): Promise<WoActivity[]> {
+    try {
+      const Woactivity: WoActivity[] = [];
+      console.log("dkhalt");
+      await new Promise<void>((resolve, reject) => {
+        this.db?.transaction((tx) => {
+          tx.executeSql(`SELECT * FROM ${this.tableNameT} WHERE WORKORDERID = ${id} `, [], (tx, results) => {
+            console.log("Queery completed");
+  
+            // Get rows with Web SQL Database spec compliance.
+  
+            const len = results.rows.length;
+            for (let i = 0; i < len; i++) {
+              const row = results.rows.item(i);
+              const wo: WoActivity = {
+                taskid: row.TASKID,
+                description: row.DESCRIPTION,
+                status : row.STATUS,
+                
+              };
+              Woactivity.push(wo);
+            }
+            console.log("wsselt xD");
+            
+            resolve();
+          }, (tx, error) => {
+            console.error(error);
+            reject(error);
+          });
+        });
+      });
+      return Woactivity;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async count(tablename: string): Promise<number> {
+    return new Promise((resolve, reject) => {
+      this.db?.transaction(tx => {
+        tx.executeSql(`SELECT * FROM ${tablename}`, [], (tx, results) => {
+          console.log("Query completed");
+  
+          const len = results.rows.length;
+          resolve(len);
+        }, (tx, error) => {
+          console.error(error);
+          reject(error);
+        });
+      });
+    });
+  }
+ 
+  
+  async logout(): Promise<void>{
+    console.log("logout")
+    await this.db?.executeSql(`DELETE FROM ${this.tableNameU}`);
+
+    
+    
+
+  }
+  
+  
 
 /*
   async saveWorkOrder(workOrder) {
@@ -235,7 +359,6 @@ export default class WorkOrderDao {
       throw error;
     }
   }
-
   async updateWorkOrder(workOrder) {
     try {
       await this.db.run(
@@ -248,7 +371,6 @@ export default class WorkOrderDao {
       throw error;
     }
   }
-
   async deleteWorkOrder(WORKORDERID) {
     try {
       await this.db.run(`DELETE FROM ${this.tableNameW} WHERE WORKORDERID = ?`, WORKORDERID);
@@ -258,7 +380,6 @@ export default class WorkOrderDao {
       throw error;
     }
   }
-
   async getAllWorkOrders() {
     try {
       const rows = await this.db.all(`SELECT * FROM ${this.tableNameW}`);
@@ -273,7 +394,6 @@ export default class WorkOrderDao {
       throw error;
     }
   }
-
   async getWorkOrderById(WORKORDERID) {
     try {
       const row = await this.db.get(`SELECT * FROM ${this.tableNameT} WHERE WORKORDERID = ?`, WORKORDERID);
@@ -292,6 +412,3 @@ export default class WorkOrderDao {
     }
   }/*/
 }
-
-
-

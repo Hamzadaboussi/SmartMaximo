@@ -18,9 +18,8 @@ import { getwodb } from '../controllers/getwodatabase';
 async function fetchWorkOrders() {
   const workOrders = await getAllWorkOrders();
 
-  //const wo = await getwodb();
-  console.log("wsselt aaaa");
-  //console.log(wo);
+  const wo = await getwodb();
+  console.log(wo);
 
   return workOrders
 
@@ -41,65 +40,28 @@ async function basedata() {
 
 }
 
-function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+function WelcomeScreen() {
   const navigation = useNavigation();
   const [showSnackBar, setShowSnackBar] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
 
-  useEffect(() => {
-    const testlogging = async () => {
-      try {
-        const c = await count();
-        console.log("hab");
-        if (c > 0) {
-          const woorkOrders = await basedata();
-          navigation.navigate('WorkOrderList', { woorkOrders: woorkOrders });
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    console.log("heeey");
-    testlogging();
-  }, );
-
   
-  const handleLogin = async () => {
+  const handleContinue = async () => {
     // Here, you can add your login logic
-    console.log(`Email: ${email}, Password: ${password}`);
-    try {
-      if(email !=="" && password !==""){
-      const response = await login(email, password);
-      const { success, error } = response;
     
-      if (success) {
-        console.log(success);
-        setIsLoading(true);
-        const woorkOrders = await fetchWorkOrders();
-        setIsLoading(false);
-        console.log('asba')
-        await logindb(email,password)
-        const c = await count();
-        console.log(c);
-        
-        navigation.navigate('WorkOrderList', { woorkOrders:  woorkOrders  });
-        
-
-        console.log("success");
-      } else {
-        Alert.alert(error as string);
+    try {
+      const c = await count();
+      console.log(c);
+      if (c > 0) {
+        const woorkOrders = await basedata();
+        navigation.navigate('WorkOrderList', { woorkOrders: woorkOrders });
       }
-    }
-    else{
-      setShowSnackBar(true);
-    }
+      else {
+        navigation.navigate('Login');
+      }
     } catch (error) {
       console.error(error);
-      setShowSnackBar(true);
     }
 
     
@@ -118,34 +80,15 @@ function LoginScreen() {
         </View>
         <View style={styles.whiteContainer}>
           <Text style={styles.loginpara}>Welcome Back </Text>
-          <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <FontAwesomeIcon icon={faEnvelope} style={styles.icon} />
-              <TextInput
-                placeholder='Email '
-                placeholderTextColor={"#212427"}
-                value={email}
-                onChangeText={setEmail}
+          <Text style={styles.tagnpara}>To Smart Maximo Application </Text>
+          
 
-                style={styles.input} />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <FontAwesomeIcon icon={faLock} style={styles.icon} />
-              <TextInput
-                placeholder='Password '
-                placeholderTextColor={"#212427"}
-                value={password}
-                onChangeText={setPassword}
-
-                style={styles.input}
-                secureTextEntry />
-            </View>
-          </View>
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.loginText}>Login</Text>
+            
+          
+          <TouchableOpacity style={styles.loginButton} onPress={handleContinue}>
+            <Text style={styles.loginText}>Continue</Text>
           </TouchableOpacity>
-          <Text style={styles.Signup}>Don't have any account ? Sign Up </Text>
+          
         </View>
 
       </View>
@@ -163,24 +106,22 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     paddingBottom: 50,
-    backgroundColor: '#F8F8FD',
   },
   container: {
     flex: 1,
     alignItems: "center",
-    backgroundColor: '#F8F8FD',
     
   },
   backgroundImage: {
     flex: 0,
-    height: '45%',
+    height: '60%',
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
   whiteContainer: {
     position: "relative",
-    top:  - 100, // 10 pixels overlapping
+    top:  - 60, // 10 pixels overlapping
     left: 0,
     height: '100%',
     width: '100%',
@@ -194,7 +135,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     position: 'absolute',
-    top: '5%',
+    top: '22%',
     left: '36%',
     borderRadius: 50,
     
@@ -214,10 +155,20 @@ const styles = StyleSheet.create({
   loginpara : {
     color : "#212427" ,
     fontSize : 30 , 
-    fontFamily : 'Roboto-Medium',
+    fontFamily : 'DMSans-Medium',
     textAlign : "left",
     alignSelf :"center",
-    paddingTop : 40,
+    paddingTop : "25%",
+    paddingBottom : 10
+     
+  },
+  tagnpara: {
+    color : "#212427" ,
+    fontSize : 20 , 
+    fontFamily : 'DMSans-Medium',
+    textAlign : "left",
+    alignSelf :"center",
+    paddingTop : 0,
     paddingBottom : 10
      
   },
@@ -249,7 +200,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingVertical: 12,
     paddingHorizontal: 20,
-    marginTop: 20,
+    marginTop: "15%",
     width: '80%',
     height : 50
   },
@@ -257,7 +208,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     textAlign: 'center',
-    fontFamily: 'Roboto-Light',
+    fontFamily: 'DMSans-Regular',
   },
   form : {
     justifyContent: "flex-start",
@@ -305,4 +256,4 @@ const styles = StyleSheet.create({
   
 
 
-export default LoginScreen;
+export default WelcomeScreen;

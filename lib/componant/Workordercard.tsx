@@ -12,6 +12,7 @@ import { Button } from 'react-native-paper';
 import { WorkOrder } from './WorkOrder';
 
 const renderWorkOrder = ({ item }: { item: WorkOrder }) => {
+  
     
     let fill = 0;
     let tintColor = '#A880E3';
@@ -19,19 +20,20 @@ const renderWorkOrder = ({ item }: { item: WorkOrder }) => {
     let easing = Easing.linear;
     let rotation = 360;
     
-    if (item.status === 'On Progress') {
+    if (item.status === 'INPRG') {
       fill = 75;
       tintColor = '#F2994A';
       easing = Easing.linear;
       rotation = 360;
       duration = 5000;
-    } else if (item.status === 'Completed') {
+    } else if (item.status === 'COMP') {
       fill = 100;
       tintColor = '#77E6B6';
       duration = 5000;
     }
     
     return (
+      
       <View style={[
         styles.workOrderContainer, 
         item.status === 'On Progress' ? { borderStartColor : '#ffffff00' } : 
@@ -63,14 +65,23 @@ const renderWorkOrder = ({ item }: { item: WorkOrder }) => {
                 
               }}
             />
-            {item.status === 'Completed' && (
+            {item.status === 'COMP' && (
               <FontAwesomeIcon icon={faCheck} color="#77E6B6" size={20} style={{ position: 'absolute', top: 16, left: 16 }} />
             )}
-            {item.status === 'On Progress' && (
+            {item.status === 'INPRG' && (
               <FontAwesomeIcon icon={faArrowTrendUp } color="#F2994A" size={20} style={{ position: 'absolute', top: 16, left: 16 }} />
             )}
-            {item.status === 'New' && (
+            {item.status === 'WPLAN'  && (
               <FontAwesomeIcon icon={faArrowTrendUp } color="#F2994A" size={20} style={{ position: 'absolute', top: 16, left: 16 }} />
+            )}
+            {item.status === 'WAPPR' || item.status === 'WAPPR' && (
+              <FontAwesomeIcon icon={faArrowTrendUp } color="#F2994A" size={20} style={{ position: 'absolute', top: 16, left: 16 }} />
+            )}
+            {item.status === 'WAPPR' && (
+              <FontAwesomeIcon icon={faArrowTrendUp } color="#F2994A" size={20} style={{ position: 'absolute', top: 16, left: 16 }} />
+            )}
+            {item.status === 'CAN' || item.status === 'CLOSE' && (
+              <FontAwesomeIcon icon={faArrowTrendUp } color="red" size={20} style={{ position: 'absolute', top: 16, left: 16 }} />
             )}
           </View>
         </View>
@@ -82,7 +93,7 @@ const renderWorkOrder = ({ item }: { item: WorkOrder }) => {
           <View>
             <View style={styles.id}>
               <FontAwesomeIcon icon={faClock} style={styles.icon2} />
-              <Text style={styles.workOrderTitle}>{` ${item.schedstart}`}</Text>
+              <Text style={styles.workOrderTitle}>{` ${item.schedstart.substring(0, 10)}`}</Text>
             </View>
             <View style={styles.id}>
               <FontAwesomeIcon icon={faScrewdriverWrench} style={styles.icon2} />
@@ -101,6 +112,7 @@ const renderWorkOrder = ({ item }: { item: WorkOrder }) => {
               
        
     </View>
+    
     );
   };
 

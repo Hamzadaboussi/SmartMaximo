@@ -46,5 +46,5 @@ export  async function logindb(username : string, password : string): Promise<an
 };
 
 export async function count() : Promise<any>{
-  return workOrderDao.count("Users");
+  return await workOrderDao.count("Users");
 }

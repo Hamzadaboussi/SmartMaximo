@@ -86,20 +86,22 @@ function WorkOrderList() {
         }
     }
     const handlePress = async (item: WorkOrder) => {
-        setLoading(true)
-        const activities = await getwActivitiesdb(item.workorderid);
-        const Wologs = await getwologdb(item.workorderid);
-        console.log("chedda");
+        //setLoading(true)
+       // const activities = await getwActivitiesdb(item.workorderid);
+        //const Wologs = await getwologdb(item.workorderid);
+        //console.log("chedda");
         
-        navigation.navigate('WorkorderDetails', { activities, Wologs: Wologs, item: item });
-        setLoading(false)
+        navigation.navigate('WorkorderDetails', { item: item });
+        //navigation.navigate('WorkorderDetails', { activities, Wologs: Wologs, item: item });
+
+        //setLoading(false)
       }
       
     useEffect(() => {
         const fetchWorkOrders = async () => {
             try {
                 const { woorkOrders } = route.params as WorkOrderListParams;
-                console.log("yezeuuuuuuuuuuuuuur" + woorkOrders);
+                console.log("workordrer" + woorkOrders);
                 if (!woorkOrders.length) {
                     setLoading(true);
                     return;

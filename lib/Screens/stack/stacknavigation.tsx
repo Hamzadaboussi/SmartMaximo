@@ -14,7 +14,7 @@ const Stack = createStackNavigator();
 function NavigationStack() {
   return (
     <SafeAreaProvider>
-      <Stack.Navigator initialRouteName="CallCenter">
+      <Stack.Navigator initialRouteName="Inter">
         <Stack.Screen name="Inter" component={WelcomeScreen} options={{headerShown : false}}/>
         <Stack.Screen name="Login" component={LoginScreen} options={{headerShown : false}}/>
         <Stack.Screen name="WorkOrderList" component={WorkOrderList} options={{headerShown : false}} />

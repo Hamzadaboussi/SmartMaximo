@@ -1,17 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native'
-import Buttonn from '../componant/Button';
-import GettingCall from '../componant/GettingCall';
+import { Button, Dimensions, FlatList, StyleSheet, Text, TextInput, View } from 'react-native'
 import Video from '../componant/Video';
 import { MediaStream, RTCView, RTCPeerConnection, RTCIceCandidate, MediaStreamTrack, RTCSessionDescription } from 'react-native-webrtc';
 import DeviceInfo from 'react-native-device-info';
+import messaging from '@react-native-firebase/messaging';
 
-import Utils from '../../Utils';
 import firestore,{FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import { create, handleRetrieveUsers, subscribe } from '../controllers/webrtcCreateUtils';
+import { firestoreCleanUp, streamCleanUp, subscribeDelete, switchAudio, switchCamera } from '../controllers/webrtcJoinUtils';
+import { sendNotificationToJoin } from '../controllers/NotificationFCMUtils';
+import { CreateChat_firestore, get_CurrentUsername } from '../controllers/FirebaseQuery';
 
 
-const configuration = {"iceServers": [{"url":"stun:stun.l.google.com:19302"}]};
+
+
+
 export default function CreateRoom() {
+  
   const [localStream, setLocalStream] = useState<MediaStream | null>()
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>()
   const [gettingCall, setGettinggcall] = useState(false);
@@ -19,146 +24,58 @@ export default function CreateRoom() {
   const [isMuted, setIsMuted] = useState(false);
   const pc = useRef<RTCPeerConnection>();
   const connecting = useRef(false);
+  const [users, setUsers] = useState<UserC[]>([]);
+  const [user, setUser] = useState<string>();
+  const [sender, setsender] = useState<string>();
   
+
+
+  
+  //Get The list Of users
+  useEffect(() => {
+    handleRetrieveUsers(setUsers);
+  }, []);
+
+  //start the call when the caller pick  a target 
+  useEffect(() => {
+    if (roomId && roomId!="") {
+      handleCreate()
+    }
+  }, [roomId]);
+
+  const handleCreate = async () => {
+    try {
+      console.log('yaaaaltiif')
+      await create(pc ,connecting,roomId,setLocalStream ,setRemoteStream);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
+  //listen for the answer
   useEffect(() => {
     const cRef = firestore().collection('meet').doc(roomId).collection("1").doc("1");
-    const subscribe = cRef.onSnapshot(snapshot => {
-      const data = snapshot.data();
-      console.log("dattttttttttta",data?.answer)
-
-      //answer start call 
-      if(pc.current && !pc.current.remoteDescription && data && data.answer){
-        pc.current.setRemoteDescription(new RTCSessionDescription(data.answer??"")).catch((error) => {
-          console.error(error);
-        });
-        console.log("9bel lappel");
-        
-      }
-
-      //if there is an offer for chatId set the getting call flag 
-
-      
-      
-    });
-
-    //on delete of collection call hangup 
-    //te other side has clicked on hangup
-    const subscribeDelete = cRef.collection('callee').onSnapshot(snapshot => {
-      snapshot.docChanges().forEach(change => {
-        if(change.type == 'removed'){
-          hangup()
-        }
-      });
-    });
     return () =>{
       
-      subscribe();
-      subscribeDelete();
+      subscribe(pc,cRef);
+      subscribeDelete(cRef,hangup);
     }
   });
 
-  const switchCamera = () => {
-    localStream?.getVideoTracks().forEach(track => track._switchCamera());
-    console.log('localStream.getVideoTracks()', localStream?.getVideoTracks());
+  //Some parametre for the video componant
+  const handleSwitchCamera = () => {
+    switchCamera(localStream);
   };
-  const switchAudio = () => {
-    localStream?.getAudioTracks().forEach(track => {
-      track.enabled = !isMuted;
-    });
-    setIsMuted(!isMuted);
-    console.log('ismuted', isMuted);
-    console.log('localStream.audio()', localStream?.getAudioTracks());
+  const handleSwitchAudio = () => {
+    switchAudio(localStream, isMuted, setIsMuted);
   };
-
-  const setupWebrtc = async () => {
-    //console.log(' origin current: ', pc.current);
-    pc.current = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: 'stun:stun.l.google.com:19302',
-        },
-        {
-          urls: 'stun:stun1.l.google.com:19302',
-        },
-        {
-          urls: 'stun:stun2.l.google.com:19302',
-        },
-      ],
-    });
-    
-   
-   
-    console.log('this is pc.current',pc.current);
-    
-    // Get the audio and video stream for the call
-    const stream = await Utils.getStream();
-    if (stream) {
-      setLocalStream(stream);
-      // pc.current.addStream(stream);
-      stream.getTracks().forEach(track => {
-        console.log('--------pc.current',pc.current);
-        pc.current?.addTrack(track, stream);
-        
-      });
-    }
-    // Get the remote stream once it is available
-    try{pc.current.ontrack = (event :any )=> {
-      console.log('event.stream', event.streams[0]);
-      //console.log('onaddstream', pc.current);
-      setRemoteStream( event.streams[0]);
-      ;}
-      
-    }
-    catch(e){
-      console.error(e,"setup")
-    }
-
-   
-  };
-  
-  
-  const create = async () => { 
-      let sessionConstraints = {
-      mandatory: {
-        OfferToReceiveAudio: true,
-        OfferToReceiveVideo: true,
-        VoiceActivityDetection: true
-      }
-    };
-    console.log("calling");
-    connecting.current = true ; 
-    await setupWebrtc();
-    //document for the call
-    const cRef = firestore().collection("meet").doc(roomId).collection("1").doc("1");
-    
-    collectIceCandidates(cRef,"caller","callee");
-    if(pc.current){
-      //create the offrer of the call 
-      const offer = await pc.current.createOffer(sessionConstraints);
-      pc.current.setLocalDescription(offer);
-    
-    const cWithOffer = { 
-      offer : {
-        type : offer.type ,
-        sdp : offer.sdp ,
-      },
-    };
-    cRef.set(cWithOffer);
-  }
-    
-
-  };
-
-
-  
-   //for discnnecting te call close the connection , release the stream 
-  //and delete the document for the  call 
-        
+ 
   const hangup = async () => { 
     setGettinggcall(false);
     connecting.current = false ; 
-    streamCleanUp();
-    firestoreCleanUp();
+    streamCleanUp(localStream,setLocalStream,setRemoteStream);
+    firestoreCleanUp(roomId);
+    setRoomId("");
     
     if(pc.current){
       pc.current.close();
@@ -166,88 +83,59 @@ export default function CreateRoom() {
 
   };
 
-  //Helper function
-  const streamCleanUp = async () => {
-    if (localStream){
-      localStream.getTracks().forEach(t=> t.stop());
-      localStream.release();
-    }
-    setLocalStream(null);
-    setRemoteStream(null);
-
-   };
-  const firestoreCleanUp = async () => { 
-    const cRef = firestore().collection('meet').doc(roomId).collection("1").doc("1");
-    if(cRef){
-      const calleeCandidate = await cRef.collection('callee').get();
-      calleeCandidate.forEach(async (candidate) => {
-        await candidate.ref.delete();
-      })
-      const callerCandidate = await cRef.collection('caller').get();
-      callerCandidate.forEach(async (candidate) => {
-        await candidate.ref.delete();
-      })
-      cRef.delete();
-    }
-  }; 
-
-  const collectIceCandidates = async (cRef: FirebaseFirestoreTypes.DocumentReference<FirebaseFirestoreTypes.DocumentData>, localName: string, remoteName: string) => {
-    const candidteCollection = cRef.collection(localName);
-    //console.log('candidteCollection', candidteCollection);
-    if (pc.current) {
-      // on new ICE candidate add it to firestore
-      pc.current.onicecandidate = (event:any) => {
-        if (event.candidate) {
-          candidteCollection.add(event.candidate);
-        }
-      };
-    }
-
-    cRef.collection(remoteName).onSnapshot(snapshot => {
-      snapshot.docChanges().forEach((change : any) => {
-        if (change.type == 'added') {
-          const candidate = new RTCIceCandidate(change.doc.data());
-
-          pc.current?.addIceCandidate(candidate);
-        }
-      })
-    })
+  const renderItem = ({ item }: { item: UserC })=> {
+    return (
+      <View style={styles.userContainer}>
+        <Text style={styles.userName}>{item.username}</Text>
+        <Button title="Call" onPress={() => handleCall(item)} color="green" />
+      </View>
+    );
   };
-  //ken fomma call yhezna l gettingcall component
+
+  const handleCall = async (user: UserC) => {
+    // Implement your call functionality here
+    console.log('Calling user:', user.username);
+    console.log("aaaaa raw user . token ",user.token)
+    messaging().requestPermission();
+    const token = await messaging().getToken();
+    await sendNotificationToJoin(user.token.toString(),user.username,token);
+    setUser(user.token);
+    //.error('hey hedha token',user.token);
+    const senderr = await get_CurrentUsername ();
+    setsender(senderr)
+    await CreateChat_firestore(await get_CurrentUsername (),user.username)
+    setRoomId(user.token.substring(0, 10))
+    console.error("hedha a",roomId)
+   // create(user.token);
+  };
 
   //yhezna l video 
   if (localStream) {
     console.log('wsselna l video');
     console.log(localStream.toURL() ,"-----", DeviceInfo.getUniqueId());
     console.log(remoteStream?.toURL(),"-----", DeviceInfo.getUniqueId());
-    
+    console.error('ya abdallah',user);
     return  <Video
     isMuted={isMuted}
-    switchAudio={switchAudio}
-    switchCamera={switchCamera}
+    switchAudio={handleSwitchAudio}
+    switchCamera={handleSwitchCamera}
     hangup={hangup}
     localStream={localStream}
     remoteStream={remoteStream}
+    targettoken = {user}
+    currentusername = {sender}
   />
       
   }
   
-
-
+  
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter room ID"
-        onChangeText={text => setRoomId(text)}
-        value={roomId}
+    <View style={styles.container1}>
+      <FlatList
+        data={users}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.username}
       />
-      
-      <Button
-          title="Create Room"
-          onPress={() => {create()}}
-        />
-      
     </View>
   );
 }
@@ -258,6 +146,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fa6",
     alignItems: 'center',
     justifyContent: 'center',
+    
+    
   },
   input: {
     height: 40,
@@ -267,6 +157,22 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 20,
     width: '80%',
+  },
+  container1: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+   
+    backgroundColor: '#fff',
+     },
+  userContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  userName: {
+    color: 'darkgrey',
+    marginRight: 10,
   },
 });
 

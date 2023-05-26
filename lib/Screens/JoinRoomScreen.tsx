@@ -5,12 +5,18 @@ import GettingCall from '../componant/GettingCall';
 import Video from '../componant/Video';
 import { MediaStream, RTCView, RTCPeerConnection, RTCIceCandidate, MediaStreamTrack, RTCSessionDescription } from 'react-native-webrtc';
 import DeviceInfo from 'react-native-device-info';
+import messaging from '@react-native-firebase/messaging';
 
 import Utils from '../../Utils';
 import firestore,{FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import { useRoute } from '@react-navigation/native';
 
-
+//interface JoinRoomProps {
+//  targetId: string;
+//}
 export default function JoinRoom() {
+  //const route = useRoute();
+  //const { targetId } = route.params as JoinRoomProps ;
   const [localStream, setLocalStream] = useState<MediaStream | null>()
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>()
   const [gettingCall, setGettinggcall] = useState(false);
@@ -24,11 +30,24 @@ export default function JoinRoom() {
   
 
   useEffect(() => {
+    messaging().requestPermission();
+        messaging()
+      .getToken()
+      .then((token) => {
+        // Use the obtained device token as needed (e.g., save it in Firestore)
+        console.log('Device Token:', token);
+        setRoomId(token.substring(0, 10));
+        
+      }).then(() => {
+       // navigation.navigate('JoinRoom', { targetId: 'A' });
+      });
+    //setRoomId(targetId);
     console.log("dkhal l use effect");
-    
+    console.log(roomId)
     const cRef = firestore().collection('meet').doc(roomId).collection("1").doc("1");
     const subscribe = cRef.onSnapshot(snapshot => {
       const data = snapshot.data();
+      console.log("this is data ye sahby",data)
       console.log("dattttttttttta",data?.answer)
 
       //answer start call 
@@ -37,7 +56,8 @@ export default function JoinRoom() {
       //if there is an offer for chatId set the getting call flag 
 
       if(data && data.offer && !connecting.current){
-        join();
+        //join();
+        setGettinggcall(true);
       }
       
     });
@@ -51,6 +71,7 @@ export default function JoinRoom() {
         if(change.type == 'removed'){
           console.error("i did that")
           hangup()
+
         }
       });
     });
@@ -121,7 +142,7 @@ export default function JoinRoom() {
     setGettinggcall(false); 
     const cRef = firestore().collection("meet").doc(roomId).collection("1").doc("1");
     const offer = (await cRef.get()).data()?.offer;
-    console.log("dattttttttttta",offer.answer)
+    console.log("this is ",offer)
     
     if (offer){
       try{
@@ -224,7 +245,9 @@ export default function JoinRoom() {
     })
   };
   //ken fomma call yhezna l gettingcall component
-  
+  if (gettingCall) {
+    return <GettingCall hangup={hangup} join={join} />;
+  }
   //yhezna l video 
   if (localStream) {
     console.log('wsselna l video');

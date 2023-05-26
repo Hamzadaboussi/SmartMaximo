@@ -13,7 +13,7 @@ export default async function getAllWorkOrders(): Promise<any> {
           '_lid': 'maxadmin',
           '_lpwd': 'maxadmin123',
           'lean': 1,
-          'oslc.pageSize': 10,
+          'oslc.pageSize': 5,
           'oslc.page': 1
         }
       });

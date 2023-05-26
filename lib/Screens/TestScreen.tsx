@@ -12,6 +12,7 @@ import { Snackbar } from 'react-native-paper';
 import { WorkOrder } from '../componant/WorkOrder';
 import NavigationStack from './stack/stacknavigation';
 import { getwodb } from '../controllers/getwodatabase';
+import { get_CurrentUsername } from '../controllers/FirebaseQuery';
 
 
 
@@ -44,14 +45,17 @@ function WelcomeScreen() {
   const navigation = useNavigation();
   const [showSnackBar, setShowSnackBar] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   
 
   
   const handleContinue = async () => {
     // Here, you can add your login logic
-    
+    const username = await get_CurrentUsername();
+    console.error(username);
     try {
       const c = await count();
+      
       console.log(c);
       if (c > 0) {
         const woorkOrders = await basedata();
@@ -63,7 +67,7 @@ function WelcomeScreen() {
     } catch (error) {
       console.error(error);
     }
-
+    
     
   };
   return (
@@ -85,7 +89,7 @@ function WelcomeScreen() {
 
             
           
-          <TouchableOpacity style={styles.loginButton} onPress={handleContinue}>
+          <TouchableOpacity style={styles.loginButton} onPress={async()=> handleContinue()}>
             <Text style={styles.loginText}>Continue</Text>
           </TouchableOpacity>
           

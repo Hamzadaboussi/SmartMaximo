@@ -12,8 +12,8 @@ import { Snackbar } from 'react-native-paper';
 import { WorkOrder } from '../componant/WorkOrder';
 import NavigationStack from './stack/stacknavigation';
 import { getwodb } from '../controllers/getwodatabase';
-
-
+import messaging from '@react-native-firebase/messaging';
+import firestore,{FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 
 async function fetchWorkOrders() {
   const workOrders = await getAllWorkOrders();
@@ -40,6 +40,38 @@ async function basedata() {
  // console.log(wo);
 
 }
+async function createUserInFirestore(username: string, token: string) {
+  try {
+    // Get a reference to the "users" collection in Firestore
+    const usersRef = firestore().collection('users');
+
+    // Query the "users" collection to check if a document with the same username already exists
+    const querySnapshot = await usersRef.where('username', '==', username).get();
+
+    // If a document with the same username already exists, update its token
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      const userRef = usersRef.doc(userDoc.id);
+      await userRef.update({
+        deviceToken: token,
+      });
+
+      console.log('User token updated successfully in Firestore');
+      return;
+    }
+
+    // Create a new document with the username and device token
+    await usersRef.add({
+      username: username,
+      deviceToken: token,
+    });
+
+    console.log('User created successfully in Firestore');
+  } catch (error) {
+    console.error('Error creating/updating user in Firestore:', error);
+  }
+}
+
 
 function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -47,7 +79,7 @@ function LoginScreen() {
   const navigation = useNavigation();
   const [showSnackBar, setShowSnackBar] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [r, setr] = useState("");
 
   useEffect(() => {
     const testlogging = async () => {
@@ -73,30 +105,44 @@ function LoginScreen() {
     console.log(`Email: ${email}, Password: ${password}`);
     try {
       if(email !=="" && password !==""){
-      const response = await login(email, password);
-      const { success, error } = response;
+     const response = await login(email, password);
+     const { success, error } = response;
     
-      if (success) {
+  if (success) {
+        if(true){
         console.log(success);
         setIsLoading(true);
         const woorkOrders = await fetchWorkOrders();
         setIsLoading(false);
-        console.log('asba')
-        await logindb(email,password)
-        const c = await count();
-        console.log(c);
+        console.log('false');
+         await logindb(email,password);
+         const c = await count();
+         console.log(c);
         
-        navigation.navigate('WorkOrderList', { woorkOrders:  woorkOrders  });
         
 
         console.log("success");
+        messaging().requestPermission();
+        messaging()
+      .getToken()
+      .then((token) => {
+        // Use the obtained device token as needed (e.g., save it in Firestore)
+        console.log('Device Token:', token);
+        createUserInFirestore(email, token);
+        
+      });
+      navigation.navigate('WorkOrderList', { woorkOrders:  woorkOrders  });
+        
+      
+
       } else {
-        Alert.alert(error as string);
+        Alert.alert('Cant do it');
       }
     }
     else{
+      setr(r);
       setShowSnackBar(true);
-    }
+    }}
     } catch (error) {
       console.error(error);
       setShowSnackBar(true);
@@ -155,7 +201,7 @@ function LoginScreen() {
           <ActivityIndicator size='large' color='#007AFF' />
         </View>
       )}
-    <Snackbar visible={showSnackBar} onDismiss={() => setShowSnackBar(false)} duration={Snackbar.DURATION_SHORT}>An error occurred. Please try again.</Snackbar></>
+    <Snackbar visible={showSnackBar} onDismiss={() => setShowSnackBar(false)} duration={Snackbar.DURATION_SHORT}>${r}</Snackbar></>
   );
 };
 

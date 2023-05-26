@@ -4,7 +4,7 @@ import Button from "./Button";
 
 interface Props {
     hangup: () => void;
-    join: () => void;
+    join:  () => void;
 }
 
 export default function GettingCall(props: Props) {

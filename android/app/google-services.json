@@ -36,7 +36,7 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:257793415459:android:757a4a25ce86593f5b9496",
+        "mobilesdk_app_id": "1:257793415459:android:875c5b7ada8aaa965b9496",
         "android_client_info": {
           "package_name": "com.stage"
         }
@@ -68,6 +68,35 @@
         "mobilesdk_app_id": "1:257793415459:android:b678f5a8cf8a0ce35b9496",
         "android_client_info": {
           "package_name": "com.videoassisstance"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "257793415459-pmatqi1gunh4k1sr8o8tr5q7rpdqkjks.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8XJ2CCZp-QuH0Da2Td2n8-G8tyAenY0A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "257793415459-pmatqi1gunh4k1sr8o8tr5q7rpdqkjks.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257793415459:android:8c825d43af779f3a5b9496",
+        "android_client_info": {
+          "package_name": "com.videocall"
         }
       },
       "oauth_client": [

@@ -103,7 +103,7 @@ android {
     }
     defaultConfig {
         applicationId "com.stage"
-        minSdkVersion 24
+        minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"

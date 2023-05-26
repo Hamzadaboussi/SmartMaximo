@@ -1,6 +1,10 @@
+import { faMicrophone, faPhone } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
 import {View , Text, Touchable, TouchableOpacity,StyleSheet} from 'react-native';
-import  Icon  from "react-native-vector-icons/FontAwesome5";
+
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
 
 interface Props{
     onPress? :any ; 
@@ -19,7 +23,11 @@ export default function Button(props: Props){
                 props.style,
                 styles.button,
              ]}>
-            <Icon name={props.iconName} color="white" size ={20}/>
+            <FontAwesomeIcon
+            size={25}
+            icon={ faPhone }
+            style={{color: "#FFF", alignItems: 'center'}}
+          />
             </TouchableOpacity>
         </View>
     );

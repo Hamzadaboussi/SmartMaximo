@@ -68,4 +68,3 @@ This project introduces a cross-platform mobile application to optimize technici
 
 This project showcases the effectiveness of a cross-platform mobile app with integrated video calling in improving work order management efficiency. With strong design principles and technical implementation, it has broad applications.
 
-Feel free to customize this README to fit your specific project details and add any additional information you deem relevant.
